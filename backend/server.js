@@ -36,6 +36,15 @@ app.use('/api/staff', staff);
 app.use('/api/payments', payments);
 app.use('/api/support', support);
 
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production' || true) { // Enabled for dev testing too
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+  app.use((req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  });
+}
+
 // Connect to database and start server
 connectDB().then(async () => {
   // Ensure the master admin account always exists
