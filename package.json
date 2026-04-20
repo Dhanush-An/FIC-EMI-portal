@@ -1,0 +1,12 @@
+{
+  "name": "fic-emi-portal",
+  "version": "1.0.0",
+  "description": "Forge India EMI Management Portal",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm run dev",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm install && npm run build"
+  }
+}
