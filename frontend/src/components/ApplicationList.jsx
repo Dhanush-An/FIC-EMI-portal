@@ -37,6 +37,62 @@ const ApplicationList = () => {
     }
   };
 
+  const handlePayment = async (app, isInstallment = false, installmentNo = null) => {
+    try {
+      const token = localStorage.getItem('token');
+      const amount = isInstallment ? (app.amountRequested / app.tenure) : (app.amountRequested * 0.1);
+      const type = isInstallment ? 'EMI' : 'DownPayment';
+
+      // 1. Create order on backend
+      const { data: orderRes } = await axios.post('http://127.0.0.1:5002/api/payments/order', {
+        amount,
+        type,
+        applicationId: app._id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!orderRes.success) throw new Error('Failed to create order');
+
+      const options = {
+        key: 'rzp_test_placeholder', // Should use env in real world
+        amount: orderRes.data.amount,
+        currency: 'INR',
+        name: 'FORGE INDIA',
+        description: `${type} for App #${app._id.slice(-6)}`,
+        order_id: orderRes.data.id,
+        handler: async (response) => {
+          try {
+            const verifyRes = await axios.post('http://127.0.0.1:5002/api/payments/verify', {
+              ...response,
+              applicationId: app._id
+            }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (verifyRes.data.success) {
+              alert('Payment Successful! Your application is now Active.');
+              window.location.reload();
+            }
+          } catch (err) {
+            alert('Verification failed: ' + err.message);
+          }
+        },
+        prefill: {
+          name: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).name : '',
+          email: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).email : '',
+        },
+        theme: { color: '#0f172a' }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert('Payment initialization failed: ' + err.message);
+    }
+  };
+
   return (
     <div className="glass-card overflow-hidden animate-fade-in">
       <div className="p-6 border-b border-slate-100 font-bold text-xl text-slate-800 flex items-center gap-2">
@@ -82,8 +138,13 @@ const ApplicationList = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                      <button 
-                      onClick={() => alert(`Redirecting to Secure Gateway for ₹${(app.status === 'Active' ? app.amountRequested / app.tenure : app.amountRequested * 0.1).toLocaleString()}`)}
-                      className="px-4 py-1.5 bg-primary-600 text-white rounded-lg text-xs font-bold hover:bg-primary-700 shadow-md active:scale-95 transition-all"
+                      disabled={app.status !== 'Approved' && app.status !== 'Active'}
+                      onClick={() => handlePayment(app)}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold shadow-md active:scale-95 transition-all ${
+                        app.status === 'Approved' || app.status === 'Active'
+                        ? 'bg-primary-600 text-white hover:bg-primary-700'
+                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      }`}
                      >
                        Pay Now
                      </button>
