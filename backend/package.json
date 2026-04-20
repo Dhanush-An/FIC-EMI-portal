@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "prestart": "npm install",
     "dev": "nodemon server.js",
-    "build": "cd ../frontend && npm install && npm run build"
+    "build": "npm install && cd ../frontend && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
