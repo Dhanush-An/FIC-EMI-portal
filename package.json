@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Forge India EMI Management Portal",
   "scripts": {
-    "start": "cd backend && npm start",
+    "start": "cd backend && npm install && npm start",
     "server": "cd backend && npm run dev",
     "client": "cd frontend && npm run dev",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm install && npm run build"
+    "build": "npm install && cd backend && npm install && cd ../frontend && npm install && npm run build",
+    "prod-start": "cd backend && npm start"
   }
 }
