@@ -17,13 +17,18 @@ const SupportSystem = ({ isAdmin = false }) => {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem('token');
-      // For staff/admin, fetch all tickets. For candidates, fetch only theirs.
-      const url = isAdmin ? 'http://127.0.0.1:5002/api/support/tickets/all' : 'http://127.0.0.1:5002/api/support/tickets';
+      // Root endpoint handles both user-specific and admin-all tickets based on token role
+      const url = 'http://127.0.0.1:5002/api/support/tickets';
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setTickets(res.data.data);
-    } catch (err) { console.error(err); }
+      setTickets(Array.isArray(res.data.data) ? res.data.data : []);
+    } catch (err) { 
+      console.error(err); 
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateTicket = async (e) => {
@@ -96,7 +101,7 @@ const SupportSystem = ({ isAdmin = false }) => {
               <p className="text-xs text-slate-500 mb-3 truncate">{ticket.description}</p>
               <div className="flex items-center text-[10px] text-slate-400 font-medium">
                 <Clock size={12} className="mr-1" />
-                {new Date(ticket.createdAt).toLocaleDateString()}
+                {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'New'}
               </div>
             </button>
           ))}
@@ -158,13 +163,13 @@ const SupportSystem = ({ isAdmin = false }) => {
             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-xl font-bold text-slate-800">{selectedTicket.subject}</h3>
-                <span className="text-xs font-bold text-slate-400">#{selectedTicket._id.slice(-6).toUpperCase()}</span>
+                <span className="text-xs font-bold text-slate-400">#{selectedTicket._id?.slice(-6).toUpperCase()}</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-md font-bold uppercase tracking-wider">
                   {selectedTicket.priority} Priority
                 </span>
-                <span className="text-xs text-slate-400 font-medium">Opened on {new Date(selectedTicket.createdAt).toLocaleString()}</span>
+                <span className="text-xs text-slate-400 font-medium">Opened on {selectedTicket.createdAt ? new Date(selectedTicket.createdAt).toLocaleString() : 'N/A'}</span>
               </div>
             </div>
 
@@ -180,7 +185,7 @@ const SupportSystem = ({ isAdmin = false }) => {
               </div>
 
               {/* Messages */}
-              {selectedTicket.messages.map((msg, i) => (
+              {selectedTicket.messages?.map((msg, i) => (
                 <div key={i} className={`flex gap-4 ${msg.sender === selectedTicket.userId ? '' : 'flex-row-reverse'}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                     msg.sender === selectedTicket.userId ? 'bg-slate-100' : 'bg-primary-100 text-primary-600'

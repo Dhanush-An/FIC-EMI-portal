@@ -42,12 +42,10 @@ const Login = () => {
         <div className="absolute top-0 right-0 w-32 h-32 bg-accent-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
         
         <div className="text-center mb-10 overflow-visible">
-          <div className="inline-flex flex-col items-center mb-8">
+          <div className="inline-flex flex-col items-center mb-0">
             <img src={logo} alt="Forge India" className="h-20 w-auto mb-3 drop-shadow-md" />
             <div className="h-1.5 w-16 bg-accent-500 rounded-full" />
           </div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Access Financial Portal</h1>
-          <p className="text-slate-500 mt-2 text-sm font-medium italic">Empowering the future of collection</p>
         </div>
 
         {error && (
