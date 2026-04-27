@@ -242,38 +242,56 @@ const CandidateDetail = ({ candidate, onBack }) => {
                     <FileText size={24} />
                  </div>
                  <div className="grid grid-cols-3 gap-4">
-                    <SummaryItem label="Int. Rate" value="12% P.A." />
+                    <SummaryItem label="Int. Rate" value={`${candidate.interestRate || 12}% P.A.`} />
                     <SummaryItem label="Proc. Fee" value="₹499" />
-                    <SummaryItem label="Tenure" value="12 Months" />
+                    <SummaryItem label="Tenure" value={`${candidate.tenure} Months`} />
                  </div>
               </div>
             )}
             {activeTab === 'Payment History' && (
                <div className="space-y-3">
-                 <PaymentRow id="TXN-4421" date="15 Mar 2026" amount="₹4,200" status="Success" />
-                 <PaymentRow id="TXN-3910" date="15 Feb 2026" amount="₹4,200" status="Success" />
-                 <PaymentRow id="TXN-3112" date="15 Jan 2026" amount="₹4,200" status="Success" />
-                 <PaymentRow id="TXN-2001" date="01 Jan 2026" amount="₹12,000" status="Down Payment" />
+                 {candidate.payments && candidate.payments.length > 0 ? (
+                   candidate.payments.map(p => (
+                     <PaymentRow key={p._id} id={`TXN-${p._id.slice(-6).toUpperCase()}`} date={new Date(p.paymentDate).toLocaleDateString()} amount={`₹${p.amount.toLocaleString()}`} status={p.status} />
+                   ))
+                 ) : (
+                   <div className="py-12 text-center text-slate-400">
+                     <CreditCard size={40} className="mx-auto mb-3 opacity-20" />
+                     <p className="text-sm">No transaction history found for this candidate.</p>
+                   </div>
+                 )}
                </div>
             )}
             {activeTab === 'Staff Remarks' && (
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold">JD</div>
-                    <span className="text-xs font-bold text-slate-700">John Doe (Verification Executive)</span>
-                    <span className="ml-auto text-[10px] text-slate-400">12 Feb, 2:30 PM</span>
+                {candidate.remarks && candidate.remarks.length > 0 ? (
+                  candidate.remarks.map((r, i) => (
+                    <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-bold">
+                          {r.by?.name?.charAt(0) || 'S'}
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">{r.by?.name || 'Staff Member'}</span>
+                        <span className="ml-auto text-[10px] text-slate-400">{new Date(r.date).toLocaleString()}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">{r.text}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-slate-400">
+                    <MessageSquare size={40} className="mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">No internal remarks recorded yet.</p>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">Candidate KYC verified via video call. Documents original and matching. Recommended for final approval.</p>
-                </div>
+                )}
               </div>
             )}
             {activeTab === 'Audit Trail' && (
               <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
-                <TimelineItem title="Application Approved" actor="Admin" date="13 Feb 2026, 11:00 AM" />
-                <TimelineItem title="KYC Verified" actor="Staff: John Doe" date="12 Feb 2026, 2:30 PM" />
-                <TimelineItem title="Mandate Registered" actor="System (Razorpay)" date="10 Feb 2026, 4:15 PM" />
-                <TimelineItem title="Documents Uploaded" actor="Candidate" date="09 Feb 2026, 6:30 PM" />
+                <TimelineItem title="Current Status" actor={candidate.status} date={new Date(candidate.applicationDate).toLocaleString()} />
+                {candidate.approvalDate && (
+                  <TimelineItem title="Application Approved" actor="Admin" date={new Date(candidate.approvalDate).toLocaleString()} />
+                )}
+                <TimelineItem title="Application Created" actor="Candidate" date={new Date(candidate.applicationDate).toLocaleString()} />
               </div>
             )}
           </div>
