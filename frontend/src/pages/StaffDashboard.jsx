@@ -178,7 +178,7 @@ const StaffDashboard = () => {
           <Route path="/reminders" element={<DueReminders applications={applications} />} />
           <Route path="/escalate" element={<EscalateFailures applications={applications} />} />
           <Route path="/support" element={<SupportSystem isAdmin={true} />} />
-          <Route path="/ledgers" element={<DownloadLedgers />} />
+          <Route path="/ledgers" element={<DownloadLedgers applications={applications} />} />
         </Routes>
       </div>
       </main>
