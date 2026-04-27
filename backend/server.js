@@ -37,7 +37,7 @@ app.use('/api/payments', payments);
 app.use('/api/support', support);
 
 // Serve static assets in production
-if (process.env.NODE_ENV === 'production' || true) { // Enabled for dev testing too
+if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
   app.use((req, res) => {

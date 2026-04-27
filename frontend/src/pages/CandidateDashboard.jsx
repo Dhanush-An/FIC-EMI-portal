@@ -231,13 +231,13 @@ const CandidateDashboard = () => {
           <Route path="/applications" element={<ApplicationList />} />
           <Route path="/payments" element={<PaymentHistory />} />
           <Route path="/overdue" element={
-            <div className="glass-card p-12 text-center animate-fade-in flex flex-col items-center border-l-4 border-red-500">
-              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
-                <AlertCircle size={48} />
+            <div className="glass-card p-12 text-center animate-fade-in flex flex-col items-center">
+              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 size={48} />
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">Payment Overdue</h3>
-              <p className="text-slate-500 mb-8 max-w-md">Your recent EMI payment is past due. Please clear your outstanding balance immediately to avoid late fees and impact on your credit score.</p>
-              <button className="btn-primary bg-red-600 hover:bg-red-700 shadow-red-200">Clear Outstanding Now</button>
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">Account Healthy</h3>
+              <p className="text-slate-500 mb-8 max-w-md">You have no overdue payments. All your EMI obligations are currently up to date.</p>
+              <button className="btn-primary" onClick={() => navigate('/candidate/payments')}>View Payment History</button>
             </div>
           } />
           <Route path="/support" element={<SupportSystem />} />

@@ -22,13 +22,9 @@ const connectDB = async () => {
       }
     }
 
-    // Fallback to memory server
-    console.log('--- Starting MongoDB Memory Server (Local Fallback) ---');
-    const mongoServer = await MongoMemoryServer.create();
-    uri = mongoServer.getUri();
-    
-    const conn = await mongoose.connect(uri);
-    console.log(`✅ MongoDB Connected (Local): ${conn.connection.host}`);
+    // Fallback to memory server removed (Force Persistent DB)
+    console.error('--- Critical: Cloud MongoDB connection failed and no fallback allowed ---');
+    process.exit(1);
   } catch (error) {
     console.error(`❌ Critical DB Error: ${error.message}`);
     process.exit(1);

@@ -54,9 +54,17 @@ import SupportSystem from '../components/SupportSystem';
 
 const AdminDashboard = () => {
   const [applications, setApplications] = useState([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 });
-  const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ 
+    total: 0, 
+    pending: 0, 
+    approved: 0,
+    paidAmount: 0,
+    pendingAmount: 0,
+    failedDebits: 0
+  });
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -71,19 +79,29 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const [appRes, staffRes] = await Promise.all([
+      const [appRes, staffRes, payRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/admin/applications`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_BASE_URL}/api/admin/staff`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_BASE_URL}/api/admin/staff`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/api/admin/payments`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       setApplications(appRes.data.data);
       setStaff(staffRes.data.data);
+      setPayments(payRes.data.data);
       
       const apps = appRes.data.data;
+      const pays = payRes.data.data;
+
+      const paidTotal = pays.filter(p => p.status === 'Success').reduce((acc, curr) => acc + curr.amount, 0);
+      const failedCount = pays.filter(p => p.status === 'Failed').length;
+      
       setStats({
         total: apps.length,
         pending: apps.filter(a => a.status === 'Submitted' || a.status === 'Under Review').length,
         approved: apps.filter(a => a.status === 'Approved' || a.status === 'Active').length,
+        paidAmount: paidTotal,
+        pendingAmount: apps.reduce((acc, curr) => acc + (curr.amountRequested || 0), 0) - paidTotal,
+        failedDebits: failedCount
       });
     } catch (err) {
       console.error(err);
@@ -255,10 +273,10 @@ const AdminDashboard = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard title="Paid Amount" value="₹0" icon={<TrendingUp size={20} />} trend="0%" color="green" />
-                <StatCard title="Pending Amount" value="₹0" icon={<Clock size={20} />} trend="0%" color="orange" />
+                <StatCard title="Paid Amount" value={`₹${stats.paidAmount.toLocaleString()}`} icon={<TrendingUp size={20} />} trend="Live" color="green" />
+                <StatCard title="Pending Amount" value={`₹${stats.pendingAmount.toLocaleString()}`} icon={<Clock size={20} />} trend="Projected" color="orange" />
                 <StatCard title="Today's Collection" value="₹0" icon={<CreditCard size={20} />} trend="No debits" color="purple" />
-                <StatCard title="Failed Debits" value="0" icon={<AlertOctagon size={20} />} trend="Secure" color="red" />
+                <StatCard title="Failed Debits" value={stats.failedDebits.toString()} icon={<AlertOctagon size={20} />} trend="Attention Required" color="red" />
               </div>
 
               {/* CHARTS ROW */}
@@ -269,7 +287,10 @@ const AdminDashboard = () => {
                     <BarChart className="text-slate-400" size={20} />
                   </div>
                   <div className="h-64 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-dashed border-slate-200">
-                    [ Revenue Trend Chart Component ]
+                    <div className="text-center">
+                      <p className="text-sm font-bold uppercase tracking-widest">Revenue Analytics</p>
+                      <p className="text-[10px]">Data will appear as payments are processed</p>
+                    </div>
                   </div>
                 </div>
                 <div className="glass-card p-6">
@@ -278,7 +299,10 @@ const AdminDashboard = () => {
                     <PieChart className="text-slate-400" size={20} />
                   </div>
                   <div className="h-64 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-dashed border-slate-200">
-                    [ Collection Distribution Chart ]
+                    <div className="text-center">
+                      <p className="text-sm font-bold uppercase tracking-widest">Collection Mix</p>
+                      <p className="text-[10px]">Waiting for active EMI data</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -341,7 +365,6 @@ const AdminDashboard = () => {
           <Route path="/settings" element={<SettingsTab />} />
           <Route path="/audit" element={<AuditTab />} />
           <Route path="/notifications" element={<NotificationsTab />} />
-          <Route path="/reports" element={<PlaceholderModule title="Reporting Center" icon={<Download size={44} />} desc="Export all business data to Finance-optimized Excel or PDF Management summaries." />} />
         </Routes>
 
         {/* Assignment Modal */}
@@ -402,21 +425,6 @@ const StatCard = ({ title, value, icon, trend, color }) => {
   );
 };
 
-const PlaceholderModule = ({ title, icon, desc }) => (
-  <div className="glass-card p-12 text-center animate-fade-in bg-white shadow-xl border border-slate-100">
-    <div className="w-20 h-20 bg-primary-50 text-primary-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
-      {icon}
-    </div>
-    <h3 className="text-2xl font-bold text-slate-800 mb-2">{title}</h3>
-    <p className="text-slate-500 mb-8 max-w-md mx-auto">{desc}</p>
-    <div className="flex justify-center gap-4">
-      <button className="px-8 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all flex items-center gap-2">
-        <PlusCircle size={20} /> Open Module
-      </button>
-      <button className="px-8 py-3 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-100 transition-all">
-        Download Template
-      </button>
-    </div>
   </div>
 );
 
