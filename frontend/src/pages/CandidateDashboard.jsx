@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import { useNavigate, Routes, Route, Link, useLocation } from 'react-router-dom';
+import logo from '../assets/logo.webp';
 import ProfileForm from '../components/ProfileForm';
 import EMIApplicationForm from '../components/EMIApplicationForm';
 import ApplicationList from '../components/ApplicationList';
@@ -149,9 +150,9 @@ const CandidateDashboard = () => {
       <aside className="dashboard-sidebar">
         {/* Fixed Header */}
         <div className="p-6 pb-2">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary-600 text-white flex items-center justify-center font-bold text-xl">F</div>
-            <span className="text-xl font-bold tracking-tight text-slate-800">FORGE INDIA</span>
+          <div className="flex flex-col items-center mb-6 px-2 mt-2">
+            <img src={logo} alt="Forge India" className="h-16 w-auto mb-2 drop-shadow-sm" />
+            <div className="h-1 w-12 bg-accent-500 rounded-full opacity-80" />
           </div>
         </div>
 
