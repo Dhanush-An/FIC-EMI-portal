@@ -35,6 +35,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 import logo from '../assets/logo.webp';
 import useAuthStore from '../store/authStore';
 import { useNavigate, Link, Routes, Route, useLocation } from 'react-router-dom';
@@ -71,8 +72,8 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const [appRes, staffRes] = await Promise.all([
-        axios.get('http://127.0.0.1:5002/api/admin/applications', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://127.0.0.1:5002/api/admin/staff', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_BASE_URL}/api/admin/applications`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/api/admin/staff`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       setApplications(appRes.data.data);
@@ -95,7 +96,7 @@ const AdminDashboard = () => {
     if (!window.confirm('Are you sure you want to approve this application?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://127.0.0.1:5002/api/admin/approve/${id}`, {}, {
+      await axios.put(`${API_BASE_URL}/api/admin/approve/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
@@ -107,7 +108,7 @@ const AdminDashboard = () => {
   const handleAssign = async (staffId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://127.0.0.1:5002/api/admin/assign/${selectedApp}`, { staffId }, {
+      await axios.put(`${API_BASE_URL}/api/admin/assign/${selectedApp}`, { staffId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowAssignModal(false);

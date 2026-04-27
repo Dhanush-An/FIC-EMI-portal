@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
-const API_URL = 'http://127.0.0.1:5002/api/auth';
+const API_URL = `${API_BASE_URL}/api/auth`;
 
 const useAuthStore = create((set) => ({
   user: JSON.parse(localStorage.getItem('user')) || null,

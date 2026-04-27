@@ -1,6 +1,7 @@
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
-const API_URL = 'http://127.0.0.1:5002/api/staff';
+const API_URL = `${API_BASE_URL}/api/staff`;
 
 export const onboardCandidate = async (candidateData) => {
   try {
