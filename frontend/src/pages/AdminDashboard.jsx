@@ -421,6 +421,7 @@ const StatCard = ({ title, value, icon, trend, color }) => {
           {trend}
         </span>
       </div>
+    </div>
   );
 };
 
