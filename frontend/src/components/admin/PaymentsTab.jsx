@@ -37,7 +37,8 @@ const PaymentsTab = () => {
       const res = await axios.get(`${API_BASE_URL}/api/admin/payments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPayments(res.data.data);
+      const validPayments = res.data.data.filter(p => p.status !== 'Created');
+      setPayments(validPayments);
     } catch (err) {
       console.error(err);
     } finally {
