@@ -12,13 +12,13 @@ exports.protect = async (req, res, next) => {
     // Set token from Bearer token in header
     token = req.headers.authorization.split(' ')[1];
   }
-  // else if (req.cookies.token) {
-  //   token = req.cookies.token;
-  // }
 
-  // Make sure token exists
-  if (!token) {
-    return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
+  // Make sure token exists and is not "null"/"undefined" string from frontend
+  if (!token || token === 'null' || token === 'undefined') {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Session expired or not logged in. Please log in again.' 
+    });
   }
 
   try {
@@ -28,12 +28,19 @@ exports.protect = async (req, res, next) => {
     req.user = await User.findById(decoded.id);
 
     if (!req.user) {
-      return res.status(401).json({ success: false, error: 'Session expired or user deleted. Please log in again.' });
+      return res.status(401).json({ 
+        success: false, 
+        error: 'User not found. Please log in again.' 
+      });
     }
 
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
+    console.error('JWT Verification Error:', err.message);
+    return res.status(401).json({ 
+      success: false, 
+      error: err.name === 'TokenExpiredError' ? 'Your session has expired. Please log in again.' : 'Not authorized to access this route. Invalid token.' 
+    });
   }
 };
 
