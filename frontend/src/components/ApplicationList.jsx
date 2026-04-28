@@ -56,7 +56,9 @@ const ApplicationList = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (!orderRes.success) throw new Error('Failed to create order');
+      if (!orderRes.data.key) {
+        console.warn('⚠️ Server did not provide a Razorpay key. Falling back to local config.');
+      }
 
       const options = {
         key: orderRes.data.key || import.meta.env.VITE_RAZORPAY_KEY_ID,

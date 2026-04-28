@@ -30,15 +30,17 @@ export const processDownPayment = async (amount, applicationId, candidateName, c
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    const order = orderRes.data.data;
+    if (!orderRes.data.key) {
+      console.warn('⚠️ Server did not provide a Razorpay key. Falling back to local config.');
+    }
 
     const options = {
       key: orderRes.data.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: orderRes.data.amount,
-      currency: order.currency,
+      currency: orderRes.data.currency,
       name: 'FIC Consultancy',
       description: 'EMI Down Payment',
-      order_id: order.id,
+      order_id: orderRes.data.id,
       handler: async function (response) {
         const verifyRes = await axios.post(`${API_URL}/verify`, {
           razorpay_order_id: response.razorpay_order_id,
