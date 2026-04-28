@@ -50,7 +50,7 @@ exports.createOrder = async (req, res) => {
       success: true, 
       data: {
         ...order,
-        key: process.env.RAZORPAY_KEY_ID || 'rzp_test_SiriIK4zfVaFIF'
+        key: process.env.RAZORPAY_KEY_ID
       } 
     });
   } catch (error) {

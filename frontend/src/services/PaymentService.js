@@ -33,7 +33,7 @@ export const processDownPayment = async (amount, applicationId, candidateName, c
     const order = orderRes.data.data;
 
     const options = {
-      key: orderRes.data.key || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SiriIK4zfVaFIF',
+      key: orderRes.data.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: orderRes.data.amount,
       currency: order.currency,
       name: 'FIC Consultancy',
