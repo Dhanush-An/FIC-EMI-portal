@@ -28,6 +28,11 @@ const staff = require('./routes/staffRoutes');
 const payments = require('./routes/paymentRoutes');
 const support = require('./routes/supportRoutes');
 
+// Home route
+app.get("/", (req, res) => {
+  res.send("FIC EMI Portal Backend API is running ✅");
+});
+
 // Mount routers
 app.use('/api/auth', auth);
 app.use('/api/candidate', candidate);
@@ -42,6 +47,14 @@ if (process.env.NODE_ENV === 'production') {
 
   app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  });
+} else {
+  // 404 Handler for development (not found in API)
+  app.use((req, res) => {
+    res.status(404).json({
+      success: false,
+      message: "Route not found"
+    });
   });
 }
 
