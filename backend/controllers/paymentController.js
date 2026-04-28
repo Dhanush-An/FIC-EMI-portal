@@ -4,16 +4,26 @@ const Payment = require('../models/Payment');
 const EMIApplication = require('../models/EMIApplication');
 const EMIPlan = require('../models/EMIPlan');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay;
+try {
+  if (process.env.RAZORPAY_KEY_ID) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+} catch (err) {
+  console.error('Razorpay initialization failed:', err.message);
+}
 
 // @desc    Create Razorpay Order (Down Payment)
 // @route   POST /api/payments/order
 // @access  Private (Candidate)
 exports.createOrder = async (req, res) => {
   try {
+    if (!razorpay) {
+      return res.status(500).json({ success: false, error: 'Razorpay is not configured on the server. Please add RAZORPAY_KEY_ID to environment variables.' });
+    }
     console.log('Creating Razorpay order with data:', req.body);
     const { amount, type, applicationId } = req.body;
 
@@ -45,6 +55,9 @@ exports.createOrder = async (req, res) => {
 // @access  Private (Candidate)
 exports.verifyPayment = async (req, res) => {
   try {
+    if (!razorpay) {
+      return res.status(500).json({ success: false, error: 'Razorpay is not configured on the server.' });
+    }
     const {
       razorpay_order_id,
       razorpay_payment_id,
