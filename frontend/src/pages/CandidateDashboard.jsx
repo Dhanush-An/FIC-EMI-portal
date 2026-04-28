@@ -26,7 +26,25 @@ import axios from 'axios';
 import API_BASE_URL from '../config';
 
 const PaymentHistory = () => {
-  const mockPayments = [];
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_BASE_URL}/api/candidate/payments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPayments(res.data.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPayments();
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in font-sans">
@@ -49,17 +67,110 @@ const PaymentHistory = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {mockPayments.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+            {loading ? (
+              <tr><td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">Loading payments...</td></tr>
+            ) : payments.length === 0 ? (
+              <tr><td colSpan="5" className="px-6 py-4 text-center text-sm text-slate-500">No payment history found.</td></tr>
+            ) : payments.map((p) => (
+              <tr key={p._id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${p.status === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${p.status === 'Success' ? 'bg-green-100 text-green-600' : p.status === 'Failed' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
                     {p.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-xs font-medium text-slate-500 font-mono">{p.id}</td>
-                <td className="px-6 py-4 text-sm font-bold text-slate-700">{p.date}</td>
-                <td className="px-6 py-4 text-sm font-bold text-slate-900">{p.amount}</td>
-                <td className="px-6 py-4 text-xs font-bold text-slate-400 uppercase">{p.method}</td>
+                <td className="px-6 py-4 text-xs font-medium text-slate-500 font-mono">{p.razorpayPaymentId || p._id}</td>
+                <td className="px-6 py-4 text-sm font-bold text-slate-700">{new Date(p.createdAt).toLocaleDateString()}</td>
+                <td className="px-6 py-4 text-sm font-bold text-slate-900">₹{p.amount.toLocaleString()}</td>
+                <td className="px-6 py-4 text-xs font-bold text-slate-400 uppercase">{p.method || 'Razorpay'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const OverduePayments = () => {
+  const [overdueInstalls, setOverdueInstalls] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchOverdue = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_BASE_URL}/api/candidate/applications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const apps = res.data.data || [];
+        const overdue = [];
+        
+        apps.forEach(app => {
+          if (app.emiPlanId && app.emiPlanId.schedule) {
+            app.emiPlanId.schedule.forEach(inst => {
+              const isOverdue = inst.status === 'Overdue' || (inst.status === 'Pending' && new Date(inst.dueDate) < new Date());
+              if (isOverdue) {
+                overdue.push({ ...inst, appId: app._id, service: app.service });
+              }
+            });
+          }
+        });
+        setOverdueInstalls(overdue);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOverdue();
+  }, []);
+
+  if (loading) {
+    return <div className="p-12 text-center text-slate-500 font-medium animate-pulse">Loading overdue payments...</div>;
+  }
+
+  if (overdueInstalls.length === 0) {
+    return (
+      <div className="glass-card p-12 text-center animate-fade-in flex flex-col items-center">
+        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 size={48} />
+        </div>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">Account Healthy</h3>
+        <p className="text-slate-500 mb-8 max-w-md">You have no overdue payments. All your EMI obligations are currently up to date.</p>
+        <button className="btn-primary" onClick={() => navigate('/candidate/payments')}>View Payment History</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in font-sans">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-bold text-slate-800">Overdue Payments</h3>
+      </div>
+      <div className="glass-card overflow-hidden">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-slate-100">
+              <th className="px-6 py-4">Installment No</th>
+              <th className="px-6 py-4">Service</th>
+              <th className="px-6 py-4">Due Date</th>
+              <th className="px-6 py-4">Amount</th>
+              <th className="px-6 py-4">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {overdueInstalls.map((inst, idx) => (
+              <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-bold text-slate-700">{inst.installmentNo}</td>
+                <td className="px-6 py-4 text-xs font-bold text-slate-500">{inst.service}</td>
+                <td className="px-6 py-4 text-sm font-bold text-red-600">{new Date(inst.dueDate).toLocaleDateString()}</td>
+                <td className="px-6 py-4 text-sm font-bold text-slate-900">₹{inst.amount.toLocaleString()}</td>
+                <td className="px-6 py-4">
+                  <button onClick={() => navigate('/candidate/applications')} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition-all">
+                    Pay Now
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -152,7 +263,7 @@ const CandidateDashboard = () => {
 
   const menuItems = [
     { title: 'EMI Option', icon: <FileText size={20} />, path: '/candidate/applications' },
-    { title: 'Payment Auto Debit', icon: <CreditCard size={20} />, path: '/candidate/payments' },
+    { title: 'Payment History', icon: <CreditCard size={20} />, path: '/candidate/payments' },
     { title: 'Overdue Payments', icon: <AlertCircle size={20} className="text-red-500" />, path: '/candidate/overdue' },
     { title: 'Support Options', icon: <HelpCircle size={20} />, path: '/candidate/support' },
   ];
@@ -243,16 +354,7 @@ const CandidateDashboard = () => {
           <Route path="/apply" element={<EMIApplicationForm />} />
           <Route path="/applications" element={<ApplicationList />} />
           <Route path="/payments" element={<PaymentHistory />} />
-          <Route path="/overdue" element={
-            <div className="glass-card p-12 text-center animate-fade-in flex flex-col items-center">
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
-                <CheckCircle2 size={48} />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">Account Healthy</h3>
-              <p className="text-slate-500 mb-8 max-w-md">You have no overdue payments. All your EMI obligations are currently up to date.</p>
-              <button className="btn-primary" onClick={() => navigate('/candidate/payments')}>View Payment History</button>
-            </div>
-          } />
+          <Route path="/overdue" element={<OverduePayments />} />
           <Route path="/support" element={<SupportSystem />} />
         </Routes>
       </main>

@@ -4,7 +4,8 @@ const {
   updateProfile,
   uploadDocs,
   applyEMI,
-  getApplications
+  getApplications,
+  getPayments
 } = require('../controllers/candidateController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -25,5 +26,6 @@ router.post('/upload', upload.fields([
 
 router.post('/apply', applyEMI);
 router.get('/applications', getApplications);
+router.get('/payments', getPayments);
 
 module.exports = router;

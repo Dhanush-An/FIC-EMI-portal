@@ -92,3 +92,16 @@ exports.getApplications = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+// @desc    Get candidate's payments
+// @route   GET /api/candidate/payments
+// @access  Private (Candidate)
+exports.getPayments = async (req, res) => {
+  try {
+    const Payment = require('../models/Payment');
+    const payments = await Payment.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: payments });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
