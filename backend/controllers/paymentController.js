@@ -54,15 +54,18 @@ exports.createOrder = async (req, res) => {
       } 
     });
   } catch (error) {
-    console.error('❌ RAZORPAY ERROR DETAILS:', error);
+    console.error('❌ RAZORPAY ORDER CREATION FAILED:', {
+      amount: req.body.amount,
+      applicationId: req.body.applicationId,
+      error: error
+    });
     
-    // Extract the most descriptive error message possible
     const errorMessage = error.error?.description || error.description || error.message || 'Razorpay rejected the request.';
     
     res.status(400).json({ 
       success: false, 
       error: errorMessage,
-      details: error.error || error
+      details: error
     });
   }
 };
