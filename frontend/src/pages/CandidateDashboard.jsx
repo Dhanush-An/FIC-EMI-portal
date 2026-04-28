@@ -125,6 +125,7 @@ const DashboardHome = () => {
           </p>
           <div className="mt-4 flex items-center text-sm text-slate-500">
             {activeApp?.status === 'Approved' ? (
+              <button 
                 onClick={() => processDownPayment(Math.round(activeApp.amountRequested * 0.1 * 100) / 100, activeApp._id, user.name, user.email)}
                 className="btn-primary py-1.5 px-3 text-xs"
               >
