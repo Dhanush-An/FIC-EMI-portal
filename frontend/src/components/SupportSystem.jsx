@@ -63,21 +63,21 @@ const SupportSystem = ({ isAdmin = false }) => {
       setSelectedTicket(updated.data.data.find(t => t._id === selectedTicket._id));
     } catch (err) { console.error(err); }
   };
-+
-+  const handleUpdateStatus = async (status) => {
-+    if (!window.confirm(`Are you sure you want to mark this ticket as ${status}?`)) return;
-+    try {
-+      const token = localStorage.getItem('token');
-+      await axios.put(`${API_BASE_URL}/api/support/tickets/${selectedTicket._id}/status`, { status }, {
-+        headers: { Authorization: `Bearer ${token}` }
-+      });
-+      fetchTickets();
-+      setSelectedTicket(prev => ({ ...prev, status }));
-+    } catch (err) { 
-+      console.error(err);
-+      alert('Failed to update status');
-+    }
-+  };
+
+  const handleUpdateStatus = async (status) => {
+    if (!window.confirm(`Are you sure you want to mark this ticket as ${status}?`)) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API_BASE_URL}/api/support/tickets/${selectedTicket._id}/status`, { status }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTickets();
+      setSelectedTicket(prev => ({ ...prev, status }));
+    } catch (err) { 
+      console.error(err);
+      alert('Failed to update status');
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
