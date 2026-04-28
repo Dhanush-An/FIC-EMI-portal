@@ -91,7 +91,7 @@ const ApplicationList = () => {
       rzp.open();
     } catch (err) {
       console.error('Payment initialization error:', err.response?.data || err.message);
-      alert('Payment initialization failed: ' + (err.response?.data?.error || err.message));
+      alert(`Payment initialization failed!\nURL: ${API_BASE_URL}/api/payments/order\nError: ${err.response?.data?.error || err.message}`);
     }
   };
 

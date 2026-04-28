@@ -68,6 +68,6 @@ export const processDownPayment = async (amount, applicationId, candidateName, c
 
   } catch (error) {
     console.error('Payment Error:', error.response?.data || error.message);
-    alert('Failed to initiate payment: ' + (error.response?.data?.error || error.message));
+    alert(`Failed to initiate payment!\nURL: ${API_URL}/order\nError: ${error.response?.data?.error || error.message}`);
   }
 };
