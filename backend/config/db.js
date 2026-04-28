@@ -24,6 +24,7 @@ const connectDB = async () => {
 
     // Fallback to memory server removed (Force Persistent DB)
     console.error('--- Critical: Cloud MongoDB connection failed and no fallback allowed ---');
+    if (!uri) console.error('Error: MONGO_URI is missing in environment variables.');
     process.exit(1);
   } catch (error) {
     console.error(`❌ Critical DB Error: ${error.message}`);
