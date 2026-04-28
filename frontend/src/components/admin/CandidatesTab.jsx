@@ -107,12 +107,16 @@ const CandidatesTab = ({ applications }) => {
                   </td>
                   <td className="px-6 py-4 text-xs">
                     <div className="font-bold text-slate-800">₹{app.amountRequested?.toLocaleString()}</div>
-                    <div className="text-slate-500 mt-0.5">Bal: ₹{(app.amountRequested * 0.8).toLocaleString()}</div>
+                    <div className="text-slate-500 mt-0.5">Bal: ₹{(app.emiPlanId?.remainingBalance || app.amountRequested).toLocaleString()}</div>
                   </td>
                   <td className="px-6 py-4 text-xs">
-                    <div className="flex items-center gap-1 text-slate-600"><Clock size={12} /> Apr 15, 2026</div>
-                    <div className={`flex items-center gap-1 text-[10px] mt-1 font-bold ${app.mandateStatus === 'Active' ? 'text-green-600' : 'text-amber-600'}`}>
-                      <ShieldCheck size={10} /> Mandate {app.mandateStatus || 'Pending'}
+                    <div className="flex items-center gap-1 text-slate-600">
+                      <Clock size={12} /> {app.emiPlanId?.schedule?.find(s => s.status === 'Pending')?.dueDate 
+                        ? new Date(app.emiPlanId.schedule.find(s => s.status === 'Pending').dueDate).toLocaleDateString()
+                        : 'Done'}
+                    </div>
+                    <div className={`flex items-center gap-1 text-[10px] mt-1 font-bold ${app.status === 'Active' ? 'text-green-600' : 'text-amber-600'}`}>
+                      <ShieldCheck size={10} /> {app.status === 'Active' ? 'Plan Active' : 'Pending Approval'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -186,10 +190,15 @@ const CandidateDetail = ({ candidate, onBack }) => {
           <div className="w-full mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
              <div className="flex justify-between items-center mb-1">
                <span className="text-[10px] font-bold text-slate-400 uppercase">EMI Progress</span>
-               <span className="text-[10px] font-bold text-slate-600">4 / 12 PMT</span>
+               <span className="text-[10px] font-bold text-slate-600">
+                 {candidate.emiPlanId?.schedule?.filter(s => s.status === 'Paid').length || 0} / {candidate.tenure} PMT
+               </span>
              </div>
              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-               <div className="w-1/3 h-full bg-primary-600" />
+               <div 
+                 className="h-full bg-primary-600 transition-all duration-500" 
+                 style={{ width: `${((candidate.emiPlanId?.schedule?.filter(s => s.status === 'Paid').length || 0) / candidate.tenure) * 100}%` }} 
+               />
              </div>
           </div>
         </div>

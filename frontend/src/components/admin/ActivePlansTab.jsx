@@ -72,7 +72,7 @@ const ActivePlansTab = ({ applications = [] }) => {
                   </td>
                   <td className="px-6 py-4 text-xs">
                     <div className="font-bold text-slate-700 uppercase">₹{plan.amountRequested?.toLocaleString()}</div>
-                    <div className="text-[10px] text-slate-400">Bal: ₹{(plan.amountRequested * 0.7).toLocaleString()}</div>
+                    <div className="text-[10px] text-slate-400">Bal: ₹{(plan.emiPlanId?.remainingBalance || (plan.amountRequested * 0.9)).toLocaleString()}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-xs font-bold text-slate-700">{plan.tenure} Months</div>
@@ -80,8 +80,12 @@ const ActivePlansTab = ({ applications = [] }) => {
                   </td>
                   <td className="px-6 py-4 text-center text-[10px]">
                     <div className="flex flex-col items-center">
-                       <span className="font-bold text-slate-500">Next: Apr 15</span>
-                       <span className="text-slate-400 mt-0.5">Start: Jan 01</span>
+                       <span className="font-bold text-slate-500">
+                         Next: {plan.emiPlanId?.schedule?.find(s => s.status === 'Pending')?.dueDate 
+                           ? new Date(plan.emiPlanId.schedule.find(s => s.status === 'Pending').dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                           : 'Done'}
+                       </span>
+                       <span className="text-slate-400 mt-0.5">Start: {new Date(plan.applicationDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 capitalize">
@@ -122,10 +126,10 @@ const PlanDetail = ({ plan, onBack }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-         <PlanCardStat label="Total Payable" value={`₹${(plan.amountRequested * 1.15).toLocaleString()}`} icon={<CreditCard size={18} />} />
-         <PlanCardStat label="Interest Rate" value="12.5% P.A." icon={<Calendar size={18} />} />
-         <PlanCardStat label="Processing Fee" value="₹0" icon={<FileText size={18} />} />
-         <PlanCardStat label="Balance Remaining" value={`₹${(plan.amountRequested * 0.8).toLocaleString()}`} icon={<ShieldCheck size={18} />} />
+         <PlanCardStat label="Total Payable" value={`₹${plan.amountRequested?.toLocaleString()}`} icon={<CreditCard size={18} />} />
+         <PlanCardStat label="Interest Rate" value={`${plan.interestRate || 0}% P.A.`} icon={<Calendar size={18} />} />
+         <PlanCardStat label="EMI Amount" value={`₹${(plan.emiPlanId?.emiAmount || 0).toLocaleString()}`} icon={<FileText size={18} />} />
+         <PlanCardStat label="Balance Remaining" value={`₹${(plan.emiPlanId?.remainingBalance || 0).toLocaleString()}`} icon={<ShieldCheck size={18} />} />
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -142,9 +146,23 @@ const PlanDetail = ({ plan, onBack }) => {
         </div>
         <div className="p-6">
            {activeTab === 'Schedule' && (
-             <div className="p-12 text-center text-slate-300">
-                <Calendar size={48} className="mx-auto mb-4 opacity-10" />
-                <p className="text-sm font-medium">Repayment schedule will appear after first debit cycle.</p>
+             <div className="space-y-2">
+                {plan.emiPlanId?.schedule?.map((item) => (
+                  <ScheduleRow 
+                    key={item._id}
+                    num={item.installmentNo}
+                    date={new Date(item.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    amount={`₹${item.amount?.toLocaleString()}`}
+                    status={item.status}
+                    pmtId={item.paymentId?.slice(-8) || 'PENDING'}
+                    isDashed={item.status === 'Pending'}
+                  />
+                )) || (
+                  <div className="p-12 text-center text-slate-300">
+                    <Calendar size={48} className="mx-auto mb-4 opacity-10" />
+                    <p className="text-sm font-medium">No repayment schedule found.</p>
+                  </div>
+                )}
              </div>
            )}
            {activeTab === 'History' && (

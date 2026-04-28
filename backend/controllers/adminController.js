@@ -13,6 +13,7 @@ exports.getApplications = async (req, res) => {
     const applications = await EMIApplication.find()
       .populate('candidateId', 'name email phone')
       .populate('staffId', 'name')
+      .populate('emiPlanId')
       .sort('-applicationDate');
 
     res.status(200).json({ success: true, count: applications.length, data: applications });
