@@ -67,7 +67,7 @@ export const processDownPayment = async (amount, applicationId, candidateName, c
     paymentObject.open();
 
   } catch (error) {
-    console.error('Payment Error:', error);
-    alert('Failed to initiate payment.');
+    console.error('Payment Error:', error.response?.data || error.message);
+    alert('Failed to initiate payment: ' + (error.response?.data?.error || error.message));
   }
 };

@@ -89,8 +89,8 @@ const ApplicationList = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
-      console.error(err);
-      alert('Payment initialization failed: ' + err.message);
+      console.error('Payment initialization error:', err.response?.data || err.message);
+      alert('Payment initialization failed: ' + (err.response?.data?.error || err.message));
     }
   };
 
