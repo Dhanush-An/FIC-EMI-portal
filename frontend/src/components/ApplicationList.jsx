@@ -58,7 +58,7 @@ const ApplicationList = () => {
       if (!orderRes.success) throw new Error('Failed to create order');
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SiriIK4zfVaFIF',
         amount: orderRes.data.amount,
         currency: 'INR',
         name: 'FORGE INDIA',
