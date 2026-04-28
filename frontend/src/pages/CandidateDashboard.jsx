@@ -87,23 +87,35 @@ const DashboardHome = () => {
     fetchApps();
   }, []);
 
-  const activeApp = apps.find(a => ['Approved', 'Submitted', 'Under Review', 'Verified'].includes(a.status));
+  const activeApp = apps.find(a => ['Approved', 'Submitted', 'Under Review', 'Verified', 'Active'].includes(a.status));
+  const activePlan = apps.find(a => a.status === 'Active')?.emiPlanId;
+
+  const totalActiveBalance = activePlan?.remainingBalance || 0;
+  const nextInstallment = activePlan?.schedule?.find(s => s.status === 'Pending');
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="glass-card p-6 bg-gradient-to-br from-primary-600 to-blue-700 text-white">
           <h3 className="text-lg font-semibold opacity-90">Total active balance</h3>
-          <p className="text-3xl font-bold mt-2">₹ 0</p>
+          <p className="text-3xl font-bold mt-2">₹ {totalActiveBalance.toLocaleString()}</p>
           <div className="mt-4 flex items-center text-sm opacity-80">
-            <Clock size={16} className="mr-1" /> All clear
+            {totalActiveBalance > 0 ? (
+              <><Clock size={16} className="mr-1" /> Payment in progress</>
+            ) : (
+              <><CheckCircle2 size={16} className="mr-1" /> All clear</>
+            )}
           </div>
         </div>
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold text-slate-700">Next Due</h3>
-          <p className="text-3xl font-bold mt-2 text-slate-900">₹ 0</p>
+          <p className="text-3xl font-bold mt-2 text-slate-900">₹ {nextInstallment?.amount.toLocaleString() || 0}</p>
           <div className="mt-4 flex items-center text-sm text-slate-500">
-            <CheckCircle2 size={16} className="mr-1 text-green-500" /> Fully paid
+            {nextInstallment ? (
+              <><Clock size={16} className="mr-1 text-orange-500" /> Due on {new Date(nextInstallment.dueDate).toLocaleDateString()}</>
+            ) : (
+              <><CheckCircle2 size={16} className="mr-1 text-green-500" /> Fully paid</>
+            )}
           </div>
         </div>
         <div className="glass-card p-6">

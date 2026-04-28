@@ -126,7 +126,7 @@ const createEMIPlan = async (application, downPayment) => {
     });
   }
 
-  await EMIPlan.create({
+  const plan = await EMIPlan.create({
     applicationId: application._id,
     candidateId: application.candidateId,
     totalAmount,
@@ -136,4 +136,8 @@ const createEMIPlan = async (application, downPayment) => {
     remainingBalance: totalAmount - downPayment,
     schedule,
   });
+
+  // Link plan back to application
+  application.emiPlanId = plan._id;
+  await application.save();
 };

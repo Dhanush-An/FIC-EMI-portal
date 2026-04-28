@@ -86,7 +86,7 @@ exports.applyEMI = async (req, res) => {
 // @access  Private (Candidate)
 exports.getApplications = async (req, res) => {
   try {
-    const applications = await EMIApplication.find({ candidateId: req.user.id });
+    const applications = await EMIApplication.find({ candidateId: req.user.id }).populate('emiPlanId');
     res.status(200).json({ success: true, data: applications });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
