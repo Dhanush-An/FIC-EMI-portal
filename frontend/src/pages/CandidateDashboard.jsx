@@ -23,6 +23,7 @@ import ApplicationList from '../components/ApplicationList';
 import SupportSystem from '../components/SupportSystem';
 import { processDownPayment } from '../services/PaymentService';
 import axios from 'axios';
+import API_BASE_URL from '../config';
 
 const PaymentHistory = () => {
   const mockPayments = [];
@@ -77,7 +78,7 @@ const DashboardHome = () => {
     const fetchApps = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://127.0.0.1:5002/api/candidate/applications', {
+        const res = await axios.get(`${API_BASE_URL}/api/candidate/applications`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setApps(res.data.data);

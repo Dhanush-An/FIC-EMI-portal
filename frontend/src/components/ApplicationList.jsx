@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, Clock, CheckCircle, XCircle, AlertCircle, CreditCard } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const ApplicationList = () => {
   const [applications, setApplications] = useState([]);
@@ -11,7 +12,7 @@ const ApplicationList = () => {
     const fetchApplications = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://127.0.0.1:5002/api/candidate/applications', {
+        const res = await axios.get(`${API_BASE_URL}/api/candidate/applications`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setApplications(res.data.data);
@@ -44,7 +45,7 @@ const ApplicationList = () => {
       const type = isInstallment ? 'EMI' : 'DownPayment';
 
       // 1. Create order on backend
-      const { data: orderRes } = await axios.post('http://127.0.0.1:5002/api/payments/order', {
+      const { data: orderRes } = await axios.post(`${API_BASE_URL}/api/payments/order`, {
         amount,
         type,
         applicationId: app._id
@@ -55,7 +56,7 @@ const ApplicationList = () => {
       if (!orderRes.success) throw new Error('Failed to create order');
 
       const options = {
-        key: 'rzp_test_placeholder', // Should use env in real world
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
         amount: orderRes.data.amount,
         currency: 'INR',
         name: 'FORGE INDIA',
@@ -63,7 +64,7 @@ const ApplicationList = () => {
         order_id: orderRes.data.id,
         handler: async (response) => {
           try {
-            const verifyRes = await axios.post('http://127.0.0.1:5002/api/payments/verify', {
+            const verifyRes = await axios.post(`${API_BASE_URL}/api/payments/verify`, {
               ...response,
               applicationId: app._id
             }, {
@@ -186,7 +187,7 @@ const ApplicationList = () => {
                                     <span className={`text-[9px] font-bold uppercase ${isLast ? 'text-red-500' : 'text-amber-500'}`}>Upcoming</span>
                                  </div>
                                  <button 
-                                  onClick={() => alert(`Initiating payment for ${isLast ? 'Final' : ordinal(i+1)} installment`)}
+                                  onClick={() => handlePayment(app, true, i + 1)}
                                   className={`p-2 rounded-lg transition-all ${isLast ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-green-600 hover:text-white'}`}
                                  >
                                     <CreditCard size={14} />

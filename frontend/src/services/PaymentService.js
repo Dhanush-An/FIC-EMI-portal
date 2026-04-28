@@ -33,7 +33,7 @@ export const processDownPayment = async (amount, applicationId, candidateName, c
     const order = orderRes.data.data;
 
     const options = {
-      key: 'rzp_test_placeholder', // Should be an env variable on frontend too
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
       amount: order.amount,
       currency: order.currency,
       name: 'FIC Consultancy',
