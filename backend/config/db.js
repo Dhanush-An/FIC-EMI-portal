@@ -5,6 +5,7 @@ const connectDB = async () => {
   console.log('Env MONGODB_PERSISTENT:', process.env.MONGODB_PERSISTENT);
   try {
     let uri = process.env.MONGO_URI;
+    console.log('MONGO_URI Found:', uri ? `${uri.substring(0, 15)}...` : '(none)');
 
     // Try primary connection
     if (uri && !uri.includes('127.0.0.1') && !uri.includes('localhost')) {
