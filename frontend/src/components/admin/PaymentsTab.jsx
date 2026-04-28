@@ -49,7 +49,28 @@ const PaymentsTab = () => {
     const candidateName = p.userId?.name || '';
     const matchesSearch = p._id.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           candidateName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filter === 'All' || p.status.toLowerCase() === filter.toLowerCase();
+    
+    let matchesFilter = true;
+    if (filter !== 'All') {
+      if (['Success', 'Failed', 'Refunded'].includes(filter)) {
+        matchesFilter = p.status.toLowerCase() === filter.toLowerCase();
+      } else {
+        const paymentDate = new Date(p.createdAt);
+        const today = new Date();
+        
+        if (filter === 'Today') {
+          matchesFilter = paymentDate.toDateString() === today.toDateString();
+        } else if (filter === 'This Week') {
+          const oneWeekAgo = new Date(today);
+          oneWeekAgo.setDate(today.getDate() - 7);
+          matchesFilter = paymentDate >= oneWeekAgo;
+        } else if (filter === 'This Month') {
+          matchesFilter = paymentDate.getMonth() === today.getMonth() && 
+                          paymentDate.getFullYear() === today.getFullYear();
+        }
+      }
+    }
+    
     return matchesSearch && matchesFilter;
   });
 
