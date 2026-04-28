@@ -46,7 +46,13 @@ exports.createOrder = async (req, res) => {
       status: 'Created',
     });
 
-    res.status(200).json({ success: true, data: order });
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        ...order,
+        key: process.env.RAZORPAY_KEY_ID || 'rzp_test_SiriIK4zfVaFIF'
+      } 
+    });
   } catch (error) {
     console.error('❌ RAZORPAY ERROR DETAILS:', error);
     
