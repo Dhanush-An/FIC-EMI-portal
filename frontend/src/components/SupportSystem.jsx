@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MessageSquare, Plus, Send, Clock, User as UserIcon } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const SupportSystem = ({ isAdmin = false }) => {
   const [tickets, setTickets] = useState([]);
@@ -18,7 +19,7 @@ const SupportSystem = ({ isAdmin = false }) => {
     try {
       const token = localStorage.getItem('token');
       // Root endpoint handles both user-specific and admin-all tickets based on token role
-      const url = 'http://127.0.0.1:5002/api/support/tickets';
+      const url = `${API_BASE_URL}/api/support/tickets`;
       const res = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -36,7 +37,7 @@ const SupportSystem = ({ isAdmin = false }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://127.0.0.1:5002/api/support/tickets', newTicket, {
+      await axios.post(`${API_BASE_URL}/api/support/tickets`, newTicket, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowNewTicket(false);
@@ -50,13 +51,13 @@ const SupportSystem = ({ isAdmin = false }) => {
     if (!reply.trim()) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://127.0.0.1:5002/api/support/tickets/${selectedTicket._id}/message`, { text: reply }, {
+      await axios.post(`${API_BASE_URL}/api/support/tickets/${selectedTicket._id}/message`, { text: reply }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReply('');
       fetchTickets();
       // Update selected ticket view
-      const updated = await axios.get('http://127.0.0.1:5002/api/support/tickets', {
+      const updated = await axios.get(`${API_BASE_URL}/api/support/tickets`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedTicket(updated.data.data.find(t => t._id === selectedTicket._id));
