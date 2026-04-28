@@ -10,6 +10,9 @@ const paymentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'EMIPlan',
   },
+  installmentNo: {
+    type: Number,
+  },
   amount: {
     type: Number,
     required: true,

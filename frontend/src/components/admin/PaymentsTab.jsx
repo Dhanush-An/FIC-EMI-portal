@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../../config';
 import { 
   Search, 
   Filter, 
@@ -33,7 +34,7 @@ const PaymentsTab = () => {
   const fetchPayments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://127.0.0.1:5002/api/admin/payments', {
+      const res = await axios.get(`${API_BASE_URL}/api/admin/payments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(res.data.data);
@@ -45,8 +46,9 @@ const PaymentsTab = () => {
   };
 
   const filteredPayments = payments.filter(p => {
-    const matchesSearch = p.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.candidate.toLowerCase().includes(searchTerm.toLowerCase());
+    const candidateName = p.userId?.name || '';
+    const matchesSearch = p._id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          candidateName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filter === 'All' || p.status.toLowerCase() === filter.toLowerCase();
     return matchesSearch && matchesFilter;
   });
@@ -110,17 +112,17 @@ const PaymentsTab = () => {
                      <span className="font-bold text-slate-800 font-mono tracking-tighter">{pmt.transactionId?.toUpperCase() || 'TXN-PENDING'}</span>
                   </td>
                   <td className="px-6 py-4">
-                     <div className="font-bold text-slate-700">{pmt.candidateId?.name || 'Unknown Candidate'}</div>
-                     <div className="text-[10px] text-primary-600 font-bold uppercase">{pmt.candidateId?.email || 'N/A'}</div>
+                     <div className="font-bold text-slate-700">{pmt.userId?.name || 'Unknown Candidate'}</div>
+                     <div className="text-[10px] text-primary-600 font-bold uppercase">{pmt.userId?.email || 'N/A'}</div>
                   </td>
-                  <td className="px-6 py-4 text-center font-bold text-slate-500">{(pmt.installmentNumber || 0).toString().padStart(2, '0')}</td>
+                  <td className="px-6 py-4 text-center font-bold text-slate-500">{(pmt.installmentNo || 0).toString().padStart(2, '0')}</td>
                   <td className="px-6 py-4">
                      <div className={`font-bold ${pmt.status === 'Failed' ? 'text-red-600 line-through opacity-70' : 'text-slate-800'}`}>₹{pmt.amount?.toLocaleString()}</div>
-                     <div className="text-[10px] text-slate-400 font-medium uppercase font-sans">{pmt.paymentType || 'Recurring'}</div>
+                     <div className="text-[10px] text-slate-400 font-medium uppercase font-sans">{pmt.type || 'Recurring'}</div>
                   </td>
                   <td className="px-6 py-4">
-                     <div className="flex items-center gap-1 text-slate-600 font-medium"><Calendar size={10} /> {new Date(pmt.paymentDate).toLocaleDateString()}</div>
-                     <div className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">{pmt.paymentMethod || 'Razorpay'}</div>
+                     <div className="flex items-center gap-1 text-slate-600 font-medium"><Calendar size={10} /> {new Date(pmt.createdAt).toLocaleDateString()}</div>
+                     <div className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">{pmt.method || 'Razorpay'}</div>
                   </td>
                   <td className="px-6 py-4">
                      <div className="flex items-center gap-2">

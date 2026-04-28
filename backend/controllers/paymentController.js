@@ -25,7 +25,7 @@ exports.createOrder = async (req, res) => {
       return res.status(500).json({ success: false, error: 'Razorpay is not configured on the server. Please add RAZORPAY_KEY_ID to environment variables.' });
     }
     console.log('Creating Razorpay order with data:', req.body);
-    const { amount, type, applicationId } = req.body;
+    const { amount, type, applicationId, installmentNo } = req.body;
 
     const options = {
       amount: Math.round(Number(amount) * 100), // amount in the smallest currency unit (paise)
@@ -42,6 +42,7 @@ exports.createOrder = async (req, res) => {
       amount: Number(amount),
       razorpayOrderId: order.id,
       type: type || 'DownPayment',
+      installmentNo: installmentNo,
       status: 'Created',
     });
 
@@ -94,15 +95,45 @@ exports.verifyPayment = async (req, res) => {
         { new: true }
       );
 
-      // If it was a down payment, update application to 'Active' 
-      // and generate the actual EMI plan (simplified logic)
-      if (applicationId) {
+      // Handle different payment types
+      if (payment.type === 'DownPayment' && applicationId) {
         const application = await EMIApplication.findById(applicationId);
         application.status = 'Active';
         await application.save();
 
         // Create the EMI Plan
         await createEMIPlan(application, payment.amount);
+      } else if (payment.type === 'EMI' && applicationId) {
+        // Find the application and its EMI plan
+        const application = await EMIApplication.findById(applicationId);
+        if (application && application.emiPlanId) {
+          const plan = await EMIPlan.findById(application.emiPlanId);
+          if (plan) {
+            // Find and update the specific installment in the schedule
+            const installmentIndex = plan.schedule.findIndex(
+              s => s.installmentNo === payment.installmentNo
+            );
+
+            if (installmentIndex !== -1) {
+              plan.schedule[installmentIndex].status = 'Paid';
+              plan.schedule[installmentIndex].paymentId = payment._id;
+              
+              // Reduce remaining balance
+              plan.remainingBalance -= payment.amount;
+              
+              // If all paid, close the plan
+              const allPaid = plan.schedule.every(s => s.status === 'Paid');
+              if (allPaid) {
+                plan.status = 'Completed';
+                application.status = 'Completed';
+                await application.save();
+              }
+              
+              await plan.save();
+              console.log(`✅ EMI Installment ${payment.installmentNo} marked as Paid`);
+            }
+          }
+        }
       }
 
       res.status(200).json({ success: true, message: 'Payment verified' });

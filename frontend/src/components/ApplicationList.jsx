@@ -50,7 +50,8 @@ const ApplicationList = () => {
       const { data: orderRes } = await axios.post(`${API_BASE_URL}/api/payments/order`, {
         amount,
         type,
-        applicationId: app._id
+        applicationId: app._id,
+        installmentNo: installmentNo
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -161,43 +162,54 @@ const ApplicationList = () => {
                            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Full Repayment Schedule</h4>
                            <span className="text-[10px] font-bold text-slate-400 italic">Target Day: 05th of every month</span>
                         </div>
-                        {Array.from({ length: app.tenure }).map((_, i) => {
-                          const isLast = i === app.tenure - 1;
-                          const ordinal = (n) => {
-                            const s = ["th", "st", "nd", "rd"], v = n % 100;
-                            return n + (s[(v - 20) % 10] || s[v] || s[0]);
-                          };
-                          
-                          return (
-                            <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:border-primary-200 transition-all group">
-                              <div className="flex items-center gap-4">
-                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[8px] font-black uppercase ${isLast ? 'bg-red-600 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600'}`}>
-                                    {isLast ? 'Last' : ordinal(i + 1)}
-                                 </div>
-                                 <div>
-                                    <p className="text-xs font-bold text-slate-700">
-                                       {new Date(new Date(app.applicationDate).setMonth(new Date(app.applicationDate).getMonth() + i + 1, 5)).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                    </p>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                       {isLast ? 'FINAL SETTLEMENT' : `${ordinal(i + 1)} Installment`}
-                                    </p>
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-6">
-                                 <div className="text-right">
-                                    <p className="text-sm font-bold text-slate-900">₹{(app.amountRequested / app.tenure).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                    <span className={`text-[9px] font-bold uppercase ${isLast ? 'text-red-500' : 'text-amber-500'}`}>Upcoming</span>
-                                 </div>
-                                 <button 
-                                  onClick={() => handlePayment(app, true, i + 1)}
-                                  className={`p-2 rounded-lg transition-all ${isLast ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-green-600 hover:text-white'}`}
-                                 >
-                                    <CreditCard size={14} />
-                                 </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                         {(app.emiPlanId?.schedule || Array.from({ length: app.tenure })).map((item, i) => {
+                           // Use actual data if available, otherwise fallback to mock
+                           const instNo = item.installmentNo || (i + 1);
+                           const instAmount = item.amount || (app.amountRequested / app.tenure);
+                           const instStatus = item.status || 'Upcoming';
+                           const instDate = item.dueDate ? new Date(item.dueDate) : new Date(new Date(app.applicationDate).setMonth(new Date(app.applicationDate).getMonth() + i + 1, 5));
+                           
+                           const isPaid = instStatus === 'Paid';
+                           const isLast = i === (app.emiPlanId?.schedule?.length || app.tenure) - 1;
+                           
+                           const ordinal = (n) => {
+                             const s = ["th", "st", "nd", "rd"], v = n % 100;
+                             return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                           };
+                           
+                           return (
+                             <div key={i} className={`flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm transition-all group ${isPaid ? 'opacity-75 bg-slate-50/30' : 'hover:border-primary-200'}`}>
+                               <div className="flex items-center gap-4">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[8px] font-black uppercase ${isPaid ? 'bg-green-600 text-white' : isLast ? 'bg-red-600 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-600'}`}>
+                                     {isPaid ? <CheckCircle size={14} /> : isLast ? 'Last' : ordinal(instNo)}
+                                  </div>
+                                  <div>
+                                     <p className="text-xs font-bold text-slate-700">
+                                        {instDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                     </p>
+                                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                        {isPaid ? 'COMPLETED' : isLast ? 'FINAL SETTLEMENT' : `${ordinal(instNo)} Installment`}
+                                     </p>
+                                  </div>
+                               </div>
+                               <div className="flex items-center gap-6">
+                                  <div className="text-right">
+                                     <p className="text-sm font-bold text-slate-900">₹{instAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                     <span className={`text-[9px] font-bold uppercase ${isPaid ? 'text-green-500' : isLast ? 'text-red-500' : 'text-amber-500'}`}>
+                                       {isPaid ? 'PAID' : 'Upcoming'}
+                                     </span>
+                                  </div>
+                                  <button 
+                                   disabled={isPaid}
+                                   onClick={() => handlePayment(app, true, instNo)}
+                                   className={`p-2 rounded-lg transition-all ${isPaid ? 'bg-green-50 text-green-600 cursor-not-allowed' : isLast ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-slate-50 text-slate-400 hover:bg-green-600 hover:text-white'}`}
+                                  >
+                                     {isPaid ? <CheckCircle size={14} /> : <CreditCard size={14} />}
+                                  </button>
+                               </div>
+                             </div>
+                           );
+                         })}
                       </div>
                     </td>
                   </tr>

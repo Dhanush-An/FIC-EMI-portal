@@ -189,8 +189,8 @@ exports.getRefunds = async (req, res) => {
 exports.getAllPayments = async (req, res) => {
   try {
     const payments = await Payment.find()
-      .populate('candidateId', 'name email')
-      .sort('-paymentDate');
+      .populate('userId', 'name email')
+      .sort('-createdAt');
     res.status(200).json({ success: true, data: payments });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
