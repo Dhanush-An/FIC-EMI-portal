@@ -61,3 +61,28 @@ exports.addMessage = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+// @desc    Update ticket status
+// @route   PUT /api/support/tickets/:id/status
+// @access  Private (Admin/Staff)
+exports.updateTicketStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const ticket = await SupportTicket.findById(req.params.id);
+    
+    if (!ticket) {
+      return res.status(404).json({ success: false, error: 'Ticket not found' });
+    }
+
+    if (req.user.role !== 'admin' && req.user.role !== 'staff') {
+      return res.status(403).json({ success: false, error: 'Not authorized to update status' });
+    }
+
+    ticket.status = status;
+    await ticket.save();
+
+    res.status(200).json({ success: true, data: ticket });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};

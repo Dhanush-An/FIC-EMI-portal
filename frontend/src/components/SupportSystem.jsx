@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MessageSquare, Plus, Send, Clock, User as UserIcon } from 'lucide-react';
+import { MessageSquare, Plus, Send, Clock, User as UserIcon, CheckCircle, XCircle } from 'lucide-react';
 import API_BASE_URL from '../config';
 
 const SupportSystem = ({ isAdmin = false }) => {
@@ -63,6 +63,21 @@ const SupportSystem = ({ isAdmin = false }) => {
       setSelectedTicket(updated.data.data.find(t => t._id === selectedTicket._id));
     } catch (err) { console.error(err); }
   };
++
++  const handleUpdateStatus = async (status) => {
++    if (!window.confirm(`Are you sure you want to mark this ticket as ${status}?`)) return;
++    try {
++      const token = localStorage.getItem('token');
++      await axios.put(`${API_BASE_URL}/api/support/tickets/${selectedTicket._id}/status`, { status }, {
++        headers: { Authorization: `Bearer ${token}` }
++      });
++      fetchTickets();
++      setSelectedTicket(prev => ({ ...prev, status }));
++    } catch (err) { 
++      console.error(err);
++      alert('Failed to update status');
++    }
++  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
@@ -94,7 +109,10 @@ const SupportSystem = ({ isAdmin = false }) => {
               <div className="flex justify-between items-start mb-1">
                 <span className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.subject}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                  ticket.status === 'Open' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                  ticket.status === 'Open' ? 'bg-green-100 text-green-700' : 
+                  ticket.status === 'Completed' ? 'bg-slate-100 text-slate-600' :
+                  ticket.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                  'bg-blue-100 text-blue-700'
                 }`}>
                   {ticket.status}
                 </span>
@@ -166,11 +184,36 @@ const SupportSystem = ({ isAdmin = false }) => {
                 <h3 className="text-xl font-bold text-slate-800">{selectedTicket.subject}</h3>
                 <span className="text-xs font-bold text-slate-400">#{selectedTicket._id?.slice(-6).toUpperCase()}</span>
               </div>
-              <div className="flex gap-3">
-                <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-md font-bold uppercase tracking-wider">
-                  {selectedTicket.priority} Priority
-                </span>
-                <span className="text-xs text-slate-400 font-medium">Opened on {selectedTicket.createdAt ? new Date(selectedTicket.createdAt).toLocaleString() : 'N/A'}</span>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-3">
+                  <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
+                    selectedTicket.status === 'Completed' ? 'bg-slate-200 text-slate-700' :
+                    selectedTicket.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                    'bg-primary-100 text-primary-700'
+                  }`}>
+                    {selectedTicket.status}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium italic">
+                    Opened on {selectedTicket.createdAt ? new Date(selectedTicket.createdAt).toLocaleString() : 'N/A'}
+                  </span>
+                </div>
+                
+                {isAdmin && selectedTicket.status !== 'Completed' && selectedTicket.status !== 'Rejected' && (
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleUpdateStatus('Completed')}
+                      className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg text-[10px] font-bold hover:bg-green-700 transition-all shadow-sm"
+                    >
+                      <CheckCircle size={14} /> COMPLETE
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus('Rejected')}
+                      className="flex items-center gap-1 px-3 py-1 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[10px] font-bold hover:bg-red-100 transition-all"
+                    >
+                      <XCircle size={14} /> REJECT
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

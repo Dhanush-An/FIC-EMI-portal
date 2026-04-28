@@ -2,7 +2,8 @@ const express = require('express');
 const {
   createTicket,
   getTickets,
-  addMessage
+  addMessage,
+  updateTicketStatus
 } = require('../controllers/supportController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -13,5 +14,6 @@ router.use(protect);
 router.post('/tickets', createTicket);
 router.get('/tickets', getTickets);
 router.post('/tickets/:id/message', addMessage);
+router.put('/tickets/:id/status', updateTicketStatus);
 
 module.exports = router;
