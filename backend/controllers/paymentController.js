@@ -14,6 +14,7 @@ const razorpay = new Razorpay({
 // @access  Private (Candidate)
 exports.createOrder = async (req, res) => {
   try {
+    console.log('Creating Razorpay order with data:', req.body);
     const { amount, type, applicationId } = req.body;
 
     const options = {

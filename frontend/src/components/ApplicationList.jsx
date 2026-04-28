@@ -40,6 +40,7 @@ const ApplicationList = () => {
 
   const handlePayment = async (app, isInstallment = false, installmentNo = null) => {
     try {
+      console.log('Initiating payment for app:', app._id, 'at URL:', API_BASE_URL);
       const token = localStorage.getItem('token');
       const amount = isInstallment ? (app.amountRequested / app.tenure) : (app.amountRequested * 0.1);
       const type = isInstallment ? 'EMI' : 'DownPayment';
