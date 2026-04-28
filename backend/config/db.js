@@ -24,10 +24,16 @@ const connectDB = async () => {
 
     // Fallback to memory server removed (Force Persistent DB)
     console.error('--- Critical: Cloud MongoDB connection failed and no fallback allowed ---');
-    if (!uri) console.error('Error: MONGO_URI is missing in environment variables.');
+    if (!uri) {
+      console.error('❌ ERROR: The MONGO_URI environment variable is UNDEFINED on the server.');
+      console.error('ACTION REQUIRED: Go to Render Dashboard -> Environment -> Add MONGO_URI.');
+    } else {
+      console.error(`❌ ERROR: A MONGO_URI was found but the connection failed.`);
+      console.error(`ACTION REQUIRED: Check if your MongoDB Atlas IP Whitelist allows access from 0.0.0.0/0.`);
+    }
     process.exit(1);
   } catch (error) {
-    console.error(`❌ Critical DB Error: ${error.message}`);
+    console.error(`❌ Unexpected DB Error: ${error.message}`);
     process.exit(1);
   }
 };
