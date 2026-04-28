@@ -46,10 +46,10 @@ exports.createOrder = async (req, res) => {
 
     res.status(200).json({ success: true, data: order });
   } catch (error) {
-    console.error('❌ Razorpay Order Error:', error);
+    console.error('❌ FULL RAZORPAY ERROR:', JSON.stringify(error, null, 2));
     res.status(400).json({ 
       success: false, 
-      error: error.description || error.message || 'Razorpay order creation failed' 
+      error: error.description || error.message || 'Razorpay rejected the request. Check Render logs for details.' 
     });
   }
 };
