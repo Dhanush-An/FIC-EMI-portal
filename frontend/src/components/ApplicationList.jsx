@@ -42,7 +42,8 @@ const ApplicationList = () => {
     try {
       console.log('Initiating payment for app:', app._id, 'at URL:', API_BASE_URL);
       const token = localStorage.getItem('token');
-      const amount = isInstallment ? (app.amountRequested / app.tenure) : (app.amountRequested * 0.1);
+      const rawAmount = isInstallment ? (app.amountRequested / app.tenure) : (app.amountRequested * 0.1);
+      const amount = Math.round(rawAmount * 100) / 100; // Round to 2 decimal places
       const type = isInstallment ? 'EMI' : 'DownPayment';
 
       // 1. Create order on backend
@@ -121,7 +122,7 @@ const ApplicationList = () => {
                   <td className="px-6 py-4 text-sm text-slate-500">{new Date(app.applicationDate).toLocaleDateString()}</td>
                   <td className="px-6 py-4 font-bold text-slate-700">
                      <div>₹{app.amountRequested.toLocaleString()}</div>
-                     <div className="text-[10px] text-primary-600 font-bold uppercase mt-1">EMI: ₹{(app.amountRequested / app.tenure).toLocaleString()} /mo</div>
+                     <div className="text-[10px] text-primary-600 font-bold uppercase mt-1">EMI: ₹{(app.amountRequested / app.tenure).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} /mo</div>
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap">
                      {app.tenure} Months
@@ -184,7 +185,7 @@ const ApplicationList = () => {
                               </div>
                               <div className="flex items-center gap-6">
                                  <div className="text-right">
-                                    <p className="text-sm font-bold text-slate-900">₹{(app.amountRequested / app.tenure).toLocaleString()}</p>
+                                    <p className="text-sm font-bold text-slate-900">₹{(app.amountRequested / app.tenure).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                     <span className={`text-[9px] font-bold uppercase ${isLast ? 'text-red-500' : 'text-amber-500'}`}>Upcoming</span>
                                  </div>
                                  <button 

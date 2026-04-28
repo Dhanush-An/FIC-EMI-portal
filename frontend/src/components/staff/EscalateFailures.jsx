@@ -26,7 +26,7 @@ const EscalateFailures = ({ applications = [] }) => {
     .map(app => ({
       name: app.candidateId?.name || 'Unknown',
       phone: app.candidateId?.phone || 'No Phone',
-      amount: `₹${(app.amountRequested / app.tenure).toLocaleString()}`,
+      amount: `₹${(app.amountRequested / app.tenure).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       reason: 'Payment Overdue',
       attempts: Math.floor(Math.random() * 3) + 1,
       lastAttempt: '1 day ago',

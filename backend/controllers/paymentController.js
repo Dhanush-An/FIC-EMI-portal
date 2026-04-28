@@ -28,17 +28,18 @@ exports.createOrder = async (req, res) => {
     const { amount, type, applicationId } = req.body;
 
     const options = {
-      amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
+      amount: Math.round(Number(amount) * 100), // amount in the smallest currency unit (paise)
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
     };
 
+    console.log('Final Razorpay options:', options);
     const order = await razorpay.orders.create(options);
 
     // Track payment in DB as 'Created'
     await Payment.create({
       userId: req.user.id,
-      amount,
+      amount: Number(amount),
       razorpayOrderId: order.id,
       type: type || 'DownPayment',
       status: 'Created',
@@ -46,10 +47,15 @@ exports.createOrder = async (req, res) => {
 
     res.status(200).json({ success: true, data: order });
   } catch (error) {
-    console.error('❌ FULL RAZORPAY ERROR:', JSON.stringify(error, null, 2));
+    console.error('❌ RAZORPAY ERROR DETAILS:', error);
+    
+    // Extract the most descriptive error message possible
+    const errorMessage = error.error?.description || error.description || error.message || 'Razorpay rejected the request.';
+    
     res.status(400).json({ 
       success: false, 
-      error: error.description || error.message || 'Razorpay rejected the request. Check Render logs for details.' 
+      error: errorMessage,
+      details: error.error || error
     });
   }
 };

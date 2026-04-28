@@ -24,7 +24,7 @@ const DueReminders = ({ applications = [] }) => {
     id: app._id,
     name: app.candidateId?.name || 'Unknown',
     phone: app.candidateId?.phone || 'No Phone',
-    amount: `₹${(app.amountRequested / app.tenure).toLocaleString()}`, // Approximate EMI
+    amount: `₹${(app.amountRequested / app.tenure).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Approximate EMI
     date: new Date(new Date().setMonth(new Date().getMonth() + 1, 5)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), // Mock: 5th of next month
     status: 'Due Today', // For demo
     reminderSent: 'None'

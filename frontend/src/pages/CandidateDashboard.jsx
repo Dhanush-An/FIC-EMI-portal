@@ -109,7 +109,7 @@ const DashboardHome = () => {
         </div>
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold text-slate-700">Next Due</h3>
-          <p className="text-3xl font-bold mt-2 text-slate-900">₹ {nextInstallment?.amount.toLocaleString() || 0}</p>
+          <p className="text-3xl font-bold mt-2 text-slate-900">₹ {(nextInstallment?.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <div className="mt-4 flex items-center text-sm text-slate-500">
             {nextInstallment ? (
               <><Clock size={16} className="mr-1 text-orange-500" /> Due on {new Date(nextInstallment.dueDate).toLocaleDateString()}</>
@@ -125,11 +125,10 @@ const DashboardHome = () => {
           </p>
           <div className="mt-4 flex items-center text-sm text-slate-500">
             {activeApp?.status === 'Approved' ? (
-              <button 
-                onClick={() => processDownPayment(activeApp.amountRequested * 0.1, activeApp._id, user.name, user.email)}
+                onClick={() => processDownPayment(Math.round(activeApp.amountRequested * 0.1 * 100) / 100, activeApp._id, user.name, user.email)}
                 className="btn-primary py-1.5 px-3 text-xs"
               >
-                Pay Down Payment (₹{(activeApp.amountRequested * 0.1).toLocaleString()})
+                Pay Down Payment (₹{(Math.round(activeApp.amountRequested * 0.1 * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
               </button>
             ) : (
               <Link to="apply" className="flex items-center text-primary-600 font-medium hover:underline">
